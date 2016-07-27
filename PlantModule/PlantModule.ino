@@ -1,6 +1,4 @@
-#include <BH1750FVI.h>
 #include <Wire.h>
-
 #include <Ticker.h>
 #include <Thread.h>
 #include <ThreadController.h>
@@ -8,118 +6,88 @@
 #include <ESP8266HTTPClient.h>
 #include <WiFiClientSecure.h>
 #include <ArduinoOTA.h>
-#include <ArduinoJson.h>
 #include "Utils.h"
 #include "OTASupport.h"
 #include "HumiditySensor.h"
+#include "Config.h"
+#include "Logger.h"
+#include "DataSender.h"
 
-//const char* host = "i75aeqr8f2.execute-api.eu-west-1.amazonaws.com";
-//const int httpsPort = 443;
 const char* fingerprint = "64 39 f5 dd a5 f6 64 d2 aa 2f 9d 3c dc 6e 42 90 a9 e6 b6 55";
 bool safeMode = true;
 
-BH1750FVI LightSensor;
-int lux;
-
-String fetchFromHttpsUrl(String url, char const* fingerprint) {
-  HTTPClient http;
-  http.setReuse(true);
-  http.begin(url, fingerprint);
-
-  String result;
-  int httpCode = http.GET();
-  if (httpCode > 0) {
-    //Serial.printf("[HTTP] GET... code: %d\n", httpCode);
-
-    // file found at server
-    if (httpCode == HTTP_CODE_OK) {
-      result = http.getString();
-    }
-  } else {
-    Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
-  }
-
-  http.end();
-  return result;
-
-}
-
-JsonObject& parseConfig(String jsonConfig) {
-  DynamicJsonBuffer  jsonBuffer;
-  JsonObject& config = jsonBuffer.parseObject(jsonConfig);
-
-  // Test if parsing succeeds.
-  if (!config.success()) {
-    Serial.println("parseObject() failed");
-  }
-  return config;
-}
-
-HumiditySensor sensor (0);
 ThreadController runner;
-Ticker timer;
 
-void runnerCallback() {
-  runner.run();
-}
 void setup() {
   Serial.begin(115200);
   Serial.println();
   Serial.println("Booting");
-
   setupWiFi();
   setupOTA();
   setClockFromNTP();
+//  pinMode(A0, INPUT);
 
   clearScreen();
   printSystemInfo();
-  String bootstrapConfig = fetchFromHttpsUrl("https://i75aeqr8f2.execute-api.eu-west-1.amazonaws.com/production/bootstrap", fingerprint);
-  JsonObject& config = parseConfig(bootstrapConfig);
+  /*
+    Config bootstrapConfig("https://i75aeqr8f2.execute-api.eu-west-1.amazonaws.com/production/bootstrap", fingerprint);
+    JsonObject& bootstrapConfigModel = bootstrapConfig.getConfig();
+    char deviceConfigUrl[255];
+    sprintf(deviceConfigUrl, "%s/%u", (const char*)bootstrapConfigModel["configUrl"], ESP.getChipId());
+    Serial.println(deviceConfigUrl);
 
-  const char* configurl = config["configUrl"];
+    Config deviceConfig(deviceConfigUrl, fingerprint);
+    JsonObject& deviceConfigModel = deviceConfig.getConfig();
 
-  char deviceConfigUrl[255];
-  sprintf(deviceConfigUrl, "%s/%u", configurl, ESP.getChipId());
-  Serial.println(deviceConfigUrl);
+    const char* deviceId = deviceConfigModel["deviceId"];
+    const char* deviceName = deviceConfigModel["deviceName"];
+    const char* dataPath = deviceConfigModel["dataPath"];
+    const char* updateFrequence = deviceConfigModel["updateFrequence"];
 
-  String deviceConfigJson = fetchFromHttpsUrl(deviceConfigUrl, fingerprint);
-  JsonObject& deviceConfig = parseConfig(deviceConfigJson);
-  const char* deviceId = deviceConfig["deviceId"];
-  const char* deviceName = deviceConfig["deviceName"];
-  const char* dataPath = deviceConfig["dataPath"];
-  const char* updateFrequence = deviceConfig["updateFrequence"];
-
-  Serial.println(deviceId);
-  Serial.println(deviceName);
-  Serial.println(dataPath);
-  Serial.println(updateFrequence);
-  
+    Serial.println(deviceId);
+    Serial.println(deviceName);
+    Serial.println(dataPath);
+    Serial.println(updateFrequence);
+  */
   if (ESP.getResetReason() == "Power on" || ESP.getResetReason() == "Software/System restart" || ESP.getResetReason() == "External System") {
     Serial.println("Good reset mode - fully operational");
+    Logger::log("Good reset mode - fully operational");
     safeMode = false;
   } else {
     Serial.println("Bad reset mode - going into safe mode");
+    Logger::log(ESP.getResetReason().c_str());
+    Logger::log("Bad reset mode - going into safe mode");
   }
 
-  LightSensor.begin();
-  LightSensor.setMode(Continuously_High_Resolution_Mode); 
+  if (!safeMode) {
+    Logger::log("1");
+    HumiditySensor humiditySensor (A0);
+    Logger::log("2");
+    humiditySensor.setInterval(100);
+    Logger::log("3");
+    const char* dataPath = "http://example.com";
+    Logger::log("4");
+    DataSender dataSender (dataPath, fingerprint);
+    Logger::log("5");
 
-  sensor.setInterval(10);
-  runner.add(&sensor);
-  //timer.attach_ms(250, runnerCallback);
+    dataSender.setInterval(5000);
+    Logger::log("6");
+    dataSender.addSensor(&humiditySensor);
+    Logger::log("7");
+    runner.add(&dataSender);
+    Logger::log("8");
+    runner.add(&humiditySensor);
+    Logger::log("9");
+  }
 }
 
 void loop() {
   ArduinoOTA.handle();
   if (!safeMode) {
     runner.run();
-      lux = LightSensor.getAmbientLight();
-  Serial.print("Ambient light intensity: ");
-  Serial.print(lux);
-  Serial.println(" lux");
-  delay(2000);
   }
   delay(10);
 }
+
 
 
