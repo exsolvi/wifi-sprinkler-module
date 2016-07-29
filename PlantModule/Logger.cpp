@@ -4,12 +4,14 @@ void Logger::log(std::string msg) {
   Logger::log(msg.c_str());
 }
 
+void Logger::log(String msg) {
+  Logger::log(msg.c_str());
+}
+
 #define LOG_UDP
 
 #ifdef LOG_UDP
-#ifndef WIFIUDP_H
 #include <WiFiUdp.h>
-#endif
 #include <string>
 
 void Logger::log(char const* msg) {
@@ -17,8 +19,7 @@ void Logger::log(char const* msg) {
   char udpBuffer[UDP_PACKET_SIZE+1];
   strcpy(udpBuffer, msg);
   strcat(udpBuffer, "\n");
-
-  unsigned int udpRemotePort = 2391;
+  unsigned int udpRemotePort = 2368;
   unsigned int udplocalPort = 2390;
   IPAddress ipBroadCast(192, 168, 1, 0);
   WiFiUDP udp;
@@ -30,8 +31,6 @@ void Logger::log(char const* msg) {
 #endif
 
 #ifdef LOG_SERIAL
-#include <Arduino.h>
-
 void Logger::log(char const* msg) {
   Serial.println(msg);
 }

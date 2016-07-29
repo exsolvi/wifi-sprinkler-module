@@ -6,7 +6,7 @@
 class HumiditySensor: public Thread , virtual public Sensor
 {
   public:
-    HumiditySensor(int sensorPin) : sensorPin(sensorPin) {};
+    explicit HumiditySensor(int sensorPin) : sensorPin(sensorPin) {};
     void run();
     void sense();
     double getSensorValue();

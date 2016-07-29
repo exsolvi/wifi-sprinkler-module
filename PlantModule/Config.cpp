@@ -1,4 +1,5 @@
 #include "Config.h"
+#include <ESP8266HTTPClient.h>
 
 Config::Config(String baseUrl, char const* fingerprint): baseUrl(baseUrl), fingerprint(fingerprint) {
   fetchedJson = fetchFromHttpsUrl(baseUrl);

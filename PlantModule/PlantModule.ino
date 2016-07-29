@@ -1,10 +1,5 @@
 #include <Wire.h>
-#include <Ticker.h>
-#include <Thread.h>
 #include <ThreadController.h>
-
-#include <ESP8266HTTPClient.h>
-#include <WiFiClientSecure.h>
 #include <ArduinoOTA.h>
 #include "Utils.h"
 #include "OTASupport.h"
@@ -17,6 +12,17 @@ const char* fingerprint = "64 39 f5 dd a5 f6 64 d2 aa 2f 9d 3c dc 6e 42 90 a9 e6
 bool safeMode = true;
 
 ThreadController runner;
+HumiditySensor humiditySensor (A0);
+DataSender dataSender;
+Thread rebootThread = Thread();
+
+int count = 0;
+
+void reboot() {
+  Logger::log("RebbotThread is rebooting node");
+  Serial.println("RebbotThread is rebooting node");
+  ESP.restart();
+}
 
 void setup() {
   Serial.begin(115200);
@@ -25,30 +31,29 @@ void setup() {
   setupWiFi();
   setupOTA();
   setClockFromNTP();
-//  pinMode(A0, INPUT);
 
   clearScreen();
   printSystemInfo();
-  /*
-    Config bootstrapConfig("https://i75aeqr8f2.execute-api.eu-west-1.amazonaws.com/production/bootstrap", fingerprint);
-    JsonObject& bootstrapConfigModel = bootstrapConfig.getConfig();
-    char deviceConfigUrl[255];
-    sprintf(deviceConfigUrl, "%s/%u", (const char*)bootstrapConfigModel["configUrl"], ESP.getChipId());
-    Serial.println(deviceConfigUrl);
 
-    Config deviceConfig(deviceConfigUrl, fingerprint);
-    JsonObject& deviceConfigModel = deviceConfig.getConfig();
+  Config bootstrapConfig("https://i75aeqr8f2.execute-api.eu-west-1.amazonaws.com/production/bootstrap", fingerprint);
+  JsonObject& bootstrapConfigModel = bootstrapConfig.getConfig();
+  char deviceConfigUrl[255];
+  sprintf(deviceConfigUrl, "%s/%u", (const char*)bootstrapConfigModel["configUrl"], ESP.getChipId());
+  Serial.println(deviceConfigUrl);
 
-    const char* deviceId = deviceConfigModel["deviceId"];
-    const char* deviceName = deviceConfigModel["deviceName"];
-    const char* dataPath = deviceConfigModel["dataPath"];
-    const char* updateFrequence = deviceConfigModel["updateFrequence"];
+  Config deviceConfig(deviceConfigUrl, fingerprint);
+  JsonObject& deviceConfigModel = deviceConfig.getConfig();
 
-    Serial.println(deviceId);
-    Serial.println(deviceName);
-    Serial.println(dataPath);
-    Serial.println(updateFrequence);
-  */
+  const char* deviceId = deviceConfigModel["deviceId"];
+  const char* deviceName = deviceConfigModel["deviceName"];
+  const char* dataPath = deviceConfigModel["dataPath"];
+  const char* updateFrequence = deviceConfigModel["updateFrequence"];
+
+  Serial.println(deviceId);
+  Serial.println(deviceName);
+  Serial.println(dataPath);
+  Serial.println(updateFrequence);
+
   if (ESP.getResetReason() == "Power on" || ESP.getResetReason() == "Software/System restart" || ESP.getResetReason() == "External System") {
     Serial.println("Good reset mode - fully operational");
     Logger::log("Good reset mode - fully operational");
@@ -61,33 +66,42 @@ void setup() {
 
   if (!safeMode) {
     Logger::log("1");
-    HumiditySensor humiditySensor (A0);
-    Logger::log("2");
+    Serial.println("1");
     humiditySensor.setInterval(100);
-    Logger::log("3");
-    const char* dataPath = "http://example.com";
+    Logger::log("2");
+    Serial.println("2");
+    dataSender.setDestinationUrl("https://i75aeqr8f2.execute-api.eu-west-1.amazonaws.com/production/metric");
     Logger::log("4");
-    DataSender dataSender (dataPath, fingerprint);
+    Serial.println("4");
+    dataSender.setFingerprint(fingerprint);
     Logger::log("5");
-
-    dataSender.setInterval(5000);
+    Serial.println("5");
+    dataSender.setInterval(10000);
     Logger::log("6");
+    Serial.println("6");
     dataSender.addSensor(&humiditySensor);
     Logger::log("7");
+    Serial.println("7");
     runner.add(&dataSender);
     Logger::log("8");
+    Serial.println("8");
     runner.add(&humiditySensor);
     Logger::log("9");
+    Serial.println("9");
+    rebootThread.setInterval(300000);
+    rebootThread.onRun(reboot);
+    runner.add(&rebootThread);
+    delay(1000);
   }
 }
 
 void loop() {
   ArduinoOTA.handle();
   if (!safeMode) {
+    //count++;
+    //Logger::log(String(count).c_str());
     runner.run();
   }
-  delay(10);
 }
-
 
 

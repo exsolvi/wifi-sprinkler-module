@@ -1,16 +1,14 @@
 #include <Arduino.h>
-#include "ThreadController.h"
 #include "HumiditySensor.h"
 #include "Sensor.h"
 #include "Logger.h"
 #include <string>
 
-const int SAMPLES = 10;
 const char* NAME = "humidity";
-int min, max;
 
 void HumiditySensor::run() {
   sense();
+  //Logger::log("In HumiditySensor.run()");
   runned();
 }
 
@@ -19,8 +17,10 @@ const char* HumiditySensor::getName() {
 }
 
 double HumiditySensor::getSensorValue() {
-  double val = humidity;
+  Logger::log(String(humidity));
+  const double val = humidity;
   humidity = 0;
+  Logger::log(String(humidity));
   count = 0;
   return val;
 }
@@ -32,13 +32,13 @@ double HumiditySensor::getSensorValueMax() {
 }
 
 double HumiditySensor::getSensorValueMin() {
-  double val = min;
-  min = 1025;
+  double val = min_humidity;
+  min_humidity = 1025;
   return val;
 }
 
 void HumiditySensor::sense() {
-  int sensorValue = analogRead(A0);
+  double sensorValue = analogRead(A0);
   count++;
   double avg = humidity - humidity / count + sensorValue / count;
   humidity = avg;
@@ -52,7 +52,7 @@ void HumiditySensor::sense() {
     String key = String("Humidity: ");
     String val = String(humidity);
     String logMsg = key + val;
-    Logger::log(std::string(logMsg.c_str()));
+    Logger::log(logMsg);
   */
 }
 

@@ -3,33 +3,28 @@
 #include "Logger.h"
 #include <Arduino.h>
 #include <vector>
+#include <ESP8266HTTPClient.h>
+
 
 void DataSender::addSensor(Sensor * sensor) {
-  /*
-    Sensor[sensorSize + 1] newSensors;
-    for (int i = 0; i < sensorSize; i++) {
-      newSensors[i] = sensors[i];
-    }
-    newSensors[i + 1] = sensor;
-    sensorSize++;
-    Logger::log("Added new sensor");
-  */
   sensors.push_back(sensor);
 }
 
 String DataSender::encodeSensorData() {
   DynamicJsonBuffer jsonBuffer;
   JsonObject& root = jsonBuffer.createObject();
-  root["sensorname"] = "gurka";
-  root["moisture"] = "-1";
-  //root["humidity"] = "-1";
-  root["temperature"] = "-1";
-  root["light"] = "-1";
+  root["sensorname"] = "Tomat";
+  root["moisture"] = "0";
+  //root["humidity"] = "0";
+  root["temperature"] = "0";
+  root["light"] = "0";
 
   for (Sensor * s : sensors) {
-    root[s->getName()] = s->getSensorValue();
-    //Logger::log(String(s->getSensorValue()).c_str());
+    int val = round(s->getSensorValue());
+    root[s->getName()] = val;
+    Logger::log(String(s->getSensorValue()));
   }
+
   String str;
   root.prettyPrintTo(str);
   Logger::log(str.c_str());
@@ -37,15 +32,19 @@ String DataSender::encodeSensorData() {
 }
 
 void DataSender::send(String payload) {
+  String returnvalue = "-1";
   HTTPClient http;
-  http.setReuse(true);
   http.begin(destinationUrl, fingerprint);
+  Logger::log(destinationUrl);
   http.addHeader("Content-Type", "application/json");
-  Logger::log("Starting to send request");
   Logger::log("Posting");
-  http.POST(payload);
-  Logger::log("Writing to stream");
-  http.writeToStream(&Serial);
+  int httpCode =  http.POST(payload);
+  if (httpCode != 200) {
+    Logger::log("Not successful");
+  } else {
+    returnvalue = http.getString();
+    Logger::log(String("Successful: ") + returnvalue);
+  }
   Logger::log("Ending");
   http.end();
 
@@ -53,6 +52,17 @@ void DataSender::send(String payload) {
 void DataSender::run() {
   String payload = encodeSensorData();
   send(payload);
+  Logger::log("In DataSender::run()");
   runned();
+}
+
+void DataSender::setDestinationUrl(char const* url) {
+  Logger::log("Set destinationUrl: ");
+  Logger::log(url);
+  destinationUrl = url;
+}
+
+void DataSender::setFingerprint(char const* fp) {
+  fingerprint = fp;
 }
 

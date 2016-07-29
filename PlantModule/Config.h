@@ -1,7 +1,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 #include <ArduinoJson.h>
-#include <ESP8266HTTPClient.h>
 
 using namespace ArduinoJson;
 

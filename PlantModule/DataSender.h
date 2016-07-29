@@ -3,12 +3,12 @@
 #include <vector>
 #include "Thread.h"
 #include "Sensor.h"
-#include "Config.h"
 
 class DataSender: public Thread
 {
   public:
-    DataSender(char const* destinationUrl, char const* fingerprint) : destinationUrl(destinationUrl), fingerprint(fingerprint) {};
+    void setDestinationUrl(char const* url);
+    void setFingerprint(char const* fp);
     void addSensor(Sensor * sensor);
     void run();
   private:
@@ -21,3 +21,4 @@ class DataSender: public Thread
 };
 
 #endif /* DATASENDER_H */
+
