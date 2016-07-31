@@ -20,9 +20,11 @@ String DataSender::encodeSensorData() {
   root["light"] = "0";
 
   for (Sensor * s : sensors) {
-    int val = round(s->getSensorValue());
+    double sensor = s->getSensorValue();
+    int val = round(sensor);
     root[s->getName()] = val;
-    Logger::log(String(s->getSensorValue()));
+    Logger::log(String(sensor));
+    Logger::log(String(val));
   }
 
   String str;

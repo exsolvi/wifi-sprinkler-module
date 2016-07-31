@@ -19,8 +19,8 @@ Thread rebootThread = Thread();
 int count = 0;
 
 void reboot() {
-  Logger::log("RebbotThread is rebooting node");
-  Serial.println("RebbotThread is rebooting node");
+  Logger::log("RebootThread is rebooting node");
+  Serial.println("RebootThread is rebooting node");
   ESP.restart();
 }
 

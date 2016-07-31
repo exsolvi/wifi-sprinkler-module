@@ -17,12 +17,10 @@ const char* HumiditySensor::getName() {
 }
 
 double HumiditySensor::getSensorValue() {
-  Logger::log(String(humidity));
-  const double val = humidity;
+  double value = humidity;
   humidity = 0;
-  Logger::log(String(humidity));
   count = 0;
-  return val;
+  return value;
 }
 
 double HumiditySensor::getSensorValueMax() {
