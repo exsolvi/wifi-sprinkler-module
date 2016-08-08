@@ -6,51 +6,53 @@ const char* ssid = "SMURFHEM";
 const char* password = "ExsolviRocksAtStorgatan";
 
 void printSystemInfo() {
-  Serial.println("----- System details -----------------------------------------");
-  Serial.print("Vcc                   : ");
+  Serial.println(F("----- System details -----------------------------------------"));
+  Serial.print(F("Vcc                   : "));
   Serial.println(ESP.getVcc());
-  Serial.print("FreeHeap              : ");
+  Serial.print(F("FreeHeap              : "));
   Serial.println(ESP.getFreeHeap());
-  Serial.print("ChipId                : ");
+  Serial.print(F("ChipId                : "));
   Serial.println(ESP.getChipId());
-  Serial.print("BootVersion           : ");
+  Serial.print(F("BootVersion           : "));
   Serial.println(ESP.getBootVersion());
-  Serial.print("BootMode              : ");
+  Serial.print(F("BootMode              : "));
   Serial.println(ESP.getBootMode());
-  Serial.print("CpuFreqMHz            : ");
+  Serial.print(F("CpuFreqMHz            : "));
   Serial.println(ESP.getCpuFreqMHz());
-  Serial.print("FlashChipId           : ");
+  Serial.print(F("FlashChipId           : "));
   Serial.println(ESP.getFlashChipId());
-  Serial.print("FlashChipSize         : ");
+  Serial.print(F("FlashChipSize         : "));
   Serial.println(ESP.getFlashChipSize());
-  Serial.print("FlashChipRealSize     : ");
+  Serial.print(F("FlashChipRealSize     : "));
   Serial.println(ESP.getFlashChipRealSize());
-  Serial.print("FlashChipSizeByChipId : ");
+  Serial.print(F("FlashChipSizeByChipId : "));
   Serial.println(ESP.getFlashChipSizeByChipId());
-  Serial.print("SdkVersion            : ");
+  Serial.print(F("SdkVersion            : "));
   Serial.println(ESP.getSdkVersion());
-  Serial.print("FlashChipSpeed        : ");
+  Serial.print(F("FlashChipSpeed        : "));
   Serial.println(ESP.getFlashChipSpeed());
-  Serial.print("FlashChipMode         : ");
+  Serial.print(F("FlashChipMode         : "));
   Serial.println(ESP.getFlashChipMode());
-  Serial.print("SketchSize            : ");
+  Serial.print(F("SketchSize            : "));
   Serial.println(ESP.getSketchSize());
-  Serial.print("FreeSketchSpace       : ");
+  Serial.print(F("FreeSketchSpace       : "));
   Serial.println(ESP.getFreeSketchSpace());
-  Serial.print("ResetReason           : ");
+  Serial.print(F("ResetReason           : "));
   Serial.println(ESP.getResetReason());
-  Serial.println("----- IP details ---------------------------------------------");
-  Serial.print("IP Address            : ");
+  Serial.println(F("----- IP details ---------------------------------------------"));
+  Serial.print(F("IP Address            : "));
   Serial.println(WiFi.localIP());
-  Serial.print("Subnet                : ");
+  Serial.print(F("Subnet                : "));
   Serial.println(WiFi.subnetMask());
-  Serial.print("Gateway               : ");
+  Serial.print(F("Gateway               : "));
   Serial.println(WiFi.gatewayIP());
-  Serial.println("----- Time details -------------------------------------------");
-  Serial.print("Time                  : ");
+#ifdef _TIME_H_
+  Serial.println(F("----- Time details -------------------------------------------"));
+  Serial.print(F("Time                  : "));
   time_t now = time(nullptr);
   Serial.println(ctime(&now));
-  Serial.println("+++++ System ready +++++++++++++++++++++++++++++++++++++++++++");
+#endif
+  Serial.println(F("+++++ System ready +++++++++++++++++++++++++++++++++++++++++++"));
 }
 
 void setupWiFi() {
