@@ -39,6 +39,8 @@ void printSystemInfo() {
   Serial.println(ESP.getFreeSketchSpace());
   Serial.print(F("ResetReason           : "));
   Serial.println(ESP.getResetReason());
+  Serial.print(F("ResetInfo             : "));
+  Serial.println(ESP.getResetInfo());
   Serial.println(F("----- IP details ---------------------------------------------"));
   Serial.print(F("IP Address            : "));
   Serial.println(WiFi.localIP());
