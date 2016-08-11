@@ -46,12 +46,10 @@ void printSystemInfo() {
   Serial.println(WiFi.subnetMask());
   Serial.print(F("Gateway               : "));
   Serial.println(WiFi.gatewayIP());
-#ifdef _TIME_H_
   Serial.println(F("----- Time details -------------------------------------------"));
   Serial.print(F("Time                  : "));
   time_t now = time(nullptr);
-  Serial.println(ctime(&now));
-#endif
+  Serial.print(ctime(&now));
   Serial.println(F("+++++ System ready +++++++++++++++++++++++++++++++++++++++++++"));
 }
 
