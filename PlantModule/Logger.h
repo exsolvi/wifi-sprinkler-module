@@ -4,8 +4,8 @@
 #include <string>
 
 class Logger {
-  private:
   public:
+    Logger();
     void static log(std::string msg);
     void static log(char const* msg);
     void static log(String msg);

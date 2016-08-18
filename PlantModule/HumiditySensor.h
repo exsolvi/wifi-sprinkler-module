@@ -2,23 +2,17 @@
 #define HUMIDITYSENSOR_H
 #include "Thread.h"
 #include "Sensor.h"
+#include "DHT.h"
 
-class HumiditySensor: public Thread , virtual public Sensor
+class HumiditySensor: public Thread , public Sensor
 {
+  private:
+    DHT* dht;
   public:
-    explicit HumiditySensor(int sensorPin) : sensorPin(sensorPin) {};
+    explicit HumiditySensor(int pin);
+    ~HumiditySensor();
     void run();
     void sense();
-    double getSensorValue();
-    double getSensorValueMax();
-    double getSensorValueMin();
-    const char* getName();
-  private:
-    int sensorPin;
-    double humidity = 0;
-    double max_humidity = 0;
-    double min_humidity = 1025;
-    int count = 0;
 };
 
 #endif /* HUMIDITYSENSOR_H */

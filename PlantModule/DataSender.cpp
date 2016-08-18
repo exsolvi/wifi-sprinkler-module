@@ -5,7 +5,6 @@
 #include <vector>
 #include <ESP8266HTTPClient.h>
 
-
 void DataSender::addSensor(Sensor * sensor) {
   sensors.push_back(sensor);
 }
@@ -14,22 +13,23 @@ String DataSender::encodeSensorData() {
   DynamicJsonBuffer jsonBuffer;
   JsonObject& root = jsonBuffer.createObject();
   root["sensorname"] = "Tomat";
-  root["moisture"] = "0";
-  //root["humidity"] = "0";
-  root["temperature"] = "0";
-  root["light"] = "0";
 
   for (Sensor * s : sensors) {
-    double sensor = s->getSensorValue();
-    int val = round(sensor);
-    root[s->getName()] = val;
-    Logger::log(String(sensor));
-    Logger::log(String(val));
+    float sensorValue = s->getAndResetCurrentValue();
+    //long val = round(sensor);
+    //String strValue = String(sensorValue);
+    //String strValue = String("\"") + String(sensorValue) + String("\"");
+    //root[s->getName()] = strValue.c_str();
+    root[s->getName()] = sensorValue;
+    //Logger::log(s->getName());
+    //Logger::log(strValue.c_str());
+    //Logger::log(String(val));
   }
 
   String str;
   root.prettyPrintTo(str);
   Logger::log(str.c_str());
+  Serial.println(str.c_str());
   return str;
 }
 
@@ -54,7 +54,7 @@ void DataSender::send(String payload) {
 void DataSender::run() {
   String payload = encodeSensorData();
   send(payload);
-  Logger::log("In DataSender::run()");
+  //Logger::log("In DataSender::run()");
   runned();
 }
 
